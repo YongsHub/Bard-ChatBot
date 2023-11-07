@@ -1,21 +1,23 @@
 from flask import Flask, request, jsonify
-from bardapi import BardCookies
-import pandas as pd
+from dotenv import load_dotenv
+from googletrans import Translator
+import google.generativeai as palm
 import os
 
+load_dotenv()
+API_KEY = os.environ.get('API_KEY')
+palm.configure(api_key=str(API_KEY))
 app = Flask(__name__)
 
-PSID = os.environ.get("PSID")
-PSIDCC = os.environ.get("PSIDCC")
-PAPISID = os.environ.get("PAPISID")
+models = [m for m in palm.list_models() if 'generateText' in m.supported_generation_methods]
+model = models[0].name
+translator = Translator()
 
-cookie_dict = {
-    "__Secure-1PSID": PSID,
-    "__Secure-1PSIDCC": PSIDCC,
-    "__Secure-1PAPISID": PAPISID
-}
 
-bard = BardCookies(cookie_dict=cookie_dict)
+def translation(text, destination = 'en'):
+    result = translator.translate(text, dest=destination).text
+    
+    return str(result)
 
 
 @app.route('/')
@@ -27,17 +29,21 @@ def hello():
 def chat():
     params = request.get_json()
     question = params['question']
+    question = translation(question) 
     response = ''
 
     try:
-        response = bard.get_answer(question)
-        df = pd.DataFrame(response['choices'])
+        response = palm.generate_text(
+            model=model,
+            prompt=question,
+            temperature=0,
+            max_output_tokens=500
+        )
+        print(response.result) 
     except:
-        print(response)
         return jsonify({"message": '시스템 점검중입니다'})
     
-    return jsonify({"code": '200', "message": 'success', "data": df['content'][0]})
-
+    return jsonify({"code": '200', "message": 'success', "data": translation(response.result, 'ko')})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)
