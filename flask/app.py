@@ -29,21 +29,22 @@ def hello():
 def chat():
     params = request.get_json()
     question = params['question']
-    question = translation(question) 
     response = ''
 
     try:
+        question = translation(question) 
         response = palm.generate_text(
             model=model,
             prompt=question,
             temperature=0,
             max_output_tokens=500
         )
-        print(response.result) 
+        return jsonify({"code": '200', "message": 'success', "data": translation(response.result, 'ko')})
+     
     except:
         return jsonify({"message": '시스템 점검중입니다'})
     
-    return jsonify({"code": '200', "message": 'success', "data": translation(response.result, 'ko')})
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=3000)
