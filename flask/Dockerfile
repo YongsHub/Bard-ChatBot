@@ -1,7 +1,8 @@
 FROM python:3.9-slim
 
-WORKDIR /test
-COPY . .
+COPY . /app
+
+WORKDIR /app
 
 RUN apt-get update && apt-get install git -y
 RUN pip3 install --upgrade pip

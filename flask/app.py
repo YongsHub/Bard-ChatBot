@@ -1,13 +1,18 @@
 from flask import Flask, request, jsonify
 from bardapi import BardCookies
 import pandas as pd
+import os
 
 app = Flask(__name__)
 
+PSID = os.environ.get("PSID")
+PSIDCC = os.environ.get("PSIDCC")
+PAPISID = os.environ.get("PAPISID")
+
 cookie_dict = {
-    "__Secure-1PSID": "",
-    "__Secure-1PSIDCC": "",
-    "__Secure-1PAPISID": ""
+    "__Secure-1PSID": PSID,
+    "__Secure-1PSIDCC": PSIDCC,
+    "__Secure-1PAPISID": PAPISID
 }
 
 bard = BardCookies(cookie_dict=cookie_dict)
